@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<title>学航助手 · 小学生学习规划管理</title>
+<style>
+/* ============ 设计令牌 ============ */
+:root{
+  --bg:#FFF9F2; --bg-soft:#FFF3E6; --surface:#FFFFFF; --surface-2:#FFF7EE;
+  --ink:#2D2418; --ink-2:#6B5D4F; --ink-3:#A08F7D;
+  --line:#F3E4D5; --line-2:#EAD8C4;
+  --primary:#F97316; --primary-deep:#EA580C; --primary-soft:#FFEEDD; --primary-ghost:#FFF5EA;
+  --green:#22A06B; --green-soft:#E2F5EC;
+  --red:#E0524D; --red-soft:#FDEBEA;
+  --blue:#3B82F6; --blue-soft:#E7F0FE;
+  --gold:#F5A623; --gold-soft:#FDF1DC;
+  --purple:#8B5CF6; --purple-soft:#EFE9FE;
+  --shadow:0 2px 10px rgba(180,110,40,.07), 0 10px 30px rgba(180,110,40,.05);
+  --shadow-lg:0 12px 40px rgba(120,60,10,.18);
+  --r-lg:20px; --r-md:16px; --r-sm:12px;
+  --nav-w:216px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1C1712; --bg-soft:#251D15; --surface:#2A2119; --surface-2:#241B13;
+    --ink:#F5EDE3; --ink-2:#C9B9A8; --ink-3:#8F7F6E;
+    --line:#3A2E21; --line-2:#4A3B2B;
+    --primary-soft:#4A2E14; --primary-ghost:#33261A;
+    --green-soft:#17352A; --red-soft:#3D2222; --blue-soft:#1E2B45; --gold-soft:#3A2E16; --purple-soft:#2B2340;
+    --shadow:0 2px 10px rgba(0,0,0,.25), 0 10px 30px rgba(0,0,0,.2);
+    --shadow-lg:0 12px 40px rgba(0,0,0,.5);
+  }
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--ink); font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+input,select,textarea{font:inherit; color:inherit;}
+:focus-visible{outline:2px solid var(--primary); outline-offset:2px; border-radius:6px;}
+::selection{background:var(--primary-soft);}
+
+/* ============ 布局 ============ */
+.app{display:flex; min-height:100vh;}
+.sidebar{
+  width:var(--nav-w); flex-shrink:0; position:sticky; top:0; height:100vh;
+  display:flex; flex-direction:column; padding:22px 14px 16px;
+  background:var(--surface); border-right:1px solid var(--line);
+}
+.brand{display:flex; align-items:center; gap:10px; padding:0 8px 18px;}
+.brand-mark{
+  width:40px; height:40px; border-radius:13px; flex-shrink:0;
+  background:linear-gradient(135deg,#FB923C,#EA580C); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 14px rgba(234,88,12,.3);
+}
+.brand-name{font-size:17px; font-weight:800; letter-spacing:.02em;}
+.brand-sub{font-size:11.5px; color:var(--ink-3); margin-top:1px;}
+.nav{display:flex; flex-direction:column; gap:4px; margin-top:4px;}
+.nav-item{
+  display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px;
+  color:var(--ink-2); font-size:14.5px; font-weight:600; text-align:left; width:100%;
+  transition:background .15s, color .15s;
+}
+.nav-item svg{flex-shrink:0; opacity:.75;}
+.nav-item:hover{background:var(--primary-ghost); color:var(--ink);}
+.nav-item.active{background:var(--primary-soft); color:var(--primary-deep);}
+.nav-item.active svg{opacity:1;}
+.nav-badge{
+  margin-left:auto; background:var(--primary); color:#fff; font-size:11px; font-weight:700;
+  min-width:20px; height:20px; border-radius:999px; display:flex; align-items:center; justify-content:center; padding:0 6px;
+}
+.nav-item.active .nav-badge{background:var(--primary-deep);}
+.side-foot{margin-top:auto; padding:12px 10px 2px; border-top:1px dashed var(--line-2);}
+.side-foot .who{font-size:13px; font-weight:700;}
+.side-foot .meta{font-size:11.5px; color:var(--ink-3); margin-top:2px; line-height:1.5;}
+
+.main{flex:1; min-width:0; padding:26px 30px 110px; max-width:1080px; margin:0 auto; width:100%;}
+.page{display:none; animation:fadeIn .25s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+@media (prefers-reduced-motion: reduce){.page{animation:none;} *{transition:none !important;}}
+
+/* ============ 通用组件 ============ */
+.page-head{margin-bottom:18px;}
+.page-head h1{font-size:24px; font-weight:800; letter-spacing:.01em;}
+.page-head .sub{color:var(--ink-2); font-size:13.5px; margin-top:3px;}
+.edu-tip{
+  display:flex; gap:9px; align-items:flex-start; background:var(--primary-ghost);
+  border:1px solid var(--line); border-radius:var(--r-md); padding:11px 14px;
+  font-size:13px; color:var(--ink-2); margin-bottom:18px; line-height:1.65;
+}
+.edu-tip b{color:var(--primary-deep); font-weight:700; white-space:nowrap;}
+.card{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg);
+  box-shadow:var(--shadow); padding:20px;
+}
+.card h2{font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px;}
+.card h2 .more{margin-left:auto; font-size:12.5px; font-weight:600; color:var(--primary-deep); cursor:pointer;}
+.card h2 .more:hover{text-decoration:underline;}
+.btn{
+  display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:8px 16px;
+  font-size:13.5px; font-weight:700; transition:transform .12s, background .15s, box-shadow .15s;
+  border:1px solid transparent; white-space:nowrap;
+}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--primary); color:#fff; box-shadow:0 4px 12px rgba(249,115,22,.3);}
+.btn-primary:hover{background:var(--primary-deep);}
+.btn-ghost{background:var(--surface); border-color:var(--line-2); color:var(--ink-2);}
+.btn-ghost:hover{border-color:var(--primary); color:var(--primary-deep);}
+.btn-soft{background:var(--primary-soft); color:var(--primary-deep);}
+.btn-soft:hover{background:var(--primary); color:#fff;}
+.btn-danger-soft{background:var(--red-soft); color:var(--red);}
+.btn-danger-soft:hover{background:var(--red); color:#fff;}
+.btn-sm{padding:5px 12px; font-size:12.5px;}
+.btn-lg{padding:12px 26px; font-size:15px;}
+.btn:disabled{opacity:.45; cursor:not-allowed; transform:none;}
+.chip{
+  display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:999px;
+  background:var(--surface); border:1.5px solid var(--line-2); font-size:13px; font-weight:600;
+  color:var(--ink-2); transition:all .15s;
+}
+.chip:hover{border-color:var(--primary); color:var(--primary-deep);}
+.chip.on{background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 4px 10px rgba(249,115,22,.28);}
+.tag{
+  display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:700;
+  padding:2px 8px; border-radius:999px; background:var(--bg-soft); color:var(--ink-2); white-space:nowrap;
+}
+.tag-subj{color:#fff;}
+.tag-points{background:var(--gold-soft); color:#9A6B12;}
+@media (prefers-color-scheme: dark){.tag-points{color:#F5C26B;}}
+.empty{
+  text-align:center; padding:44px 20px; color:var(--ink-3);
+}
+.empty .em{width:64px; height:64px; margin:0 auto 12px; border-radius:20px; background:var(--bg-soft);
+  display:flex; align-items:center; justify-content:center; color:var(--ink-3);}
+.empty p{font-size:14px; font-weight:600; color:var(--ink-2);}
+.empty span{font-size:12.5px; display:block; margin-top:4px;}
+.grid{display:grid; gap:16px;}
+.only-print{display:none;}
+
+/* ============ 首页 ============ */
+.greet{margin-bottom:20px;}
+.greet h1{font-size:26px; font-weight:800;}
+.greet p{color:var(--ink-2); font-size:14px; margin-top:4px;}
+.stat-grid{grid-template-columns:repeat(4,1fr); margin-bottom:16px;}
+.stat-card{display:flex; align-items:center; gap:14px; padding:18px;}
+.stat-ic{width:52px; height:52px; border-radius:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.stat-num{font-size:24px; font-weight:800; line-height:1.15;}
+.stat-num small{font-size:13px; font-weight:600; color:var(--ink-3);}
+.stat-label{font-size:12.5px; color:var(--ink-3); font-weight:600;}
+.ring-wrap{position:relative; width:64px; height:64px; flex-shrink:0;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-center{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800;}
+.two-col{grid-template-columns:1.5fr 1fr; align-items:start;}
+.mini-list{display:flex; flex-direction:column;}
+.mini-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px dashed var(--line);}
+.mini-row:last-child{border-bottom:none; padding-bottom:2px;}
+.mini-row .dot{width:9px; height:9px; border-radius:3px; flex-shrink:0;}
+.mini-row .nm{font-weight:600; font-size:14px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.mini-row .tm{font-size:12px; color:var(--ink-3); white-space:nowrap;}
+.mini-row.done .nm{color:var(--ink-3); text-decoration:line-through;}
+.advice-card{background:linear-gradient(135deg,var(--primary-ghost),var(--surface));}
+.advice-card .txt{font-size:14.5px; line-height:1.75; color:var(--ink); margin-top:8px;}
+.advice-card .why{font-size:12.5px; color:var(--ink-3); margin-top:6px;}
+
+/* ============ 作业 ============ */
+.filters{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; align-items:center;}
+.filters .f-label{font-size:12.5px; font-weight:700; color:var(--ink-3); margin-right:2px;}
+.filter-block{margin-bottom:14px;}
+.filter-block .row{display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin-bottom:7px;}
+.filter-block .row:last-child{margin-bottom:0;}
+.hw-group{margin-bottom:22px;}
+.hw-group-head{
+  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; padding:6px 4px 10px;
+}
+.hw-group-head .day{font-size:16.5px; font-weight:800;}
+.hw-group-head .rel{font-size:12px; color:var(--ink-3); font-weight:600;}
+.hw-group-head .stats{margin-left:auto; font-size:12.5px; color:var(--ink-2); display:flex; gap:10px; flex-wrap:wrap;}
+.hw-group-head .stats b{color:var(--ink);}
+.hw-list{display:flex; flex-direction:column; gap:10px;}
+.hw-item{
+  display:flex; gap:13px; align-items:flex-start; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-md); padding:14px 16px; box-shadow:var(--shadow); transition:border-color .15s;
+}
+.hw-item:hover{border-color:var(--line-2);}
+.hw-item.is-done{opacity:.78;}
+.hw-check{
+  width:26px; height:26px; border-radius:9px; border:2px solid var(--line-2); flex-shrink:0; margin-top:2px;
+  display:flex; align-items:center; justify-content:center; color:#fff; transition:all .15s; background:var(--surface);
+}
+.hw-check:hover{border-color:var(--green);}
+.hw-check.checked{background:var(--green); border-color:var(--green);}
+.hw-body{flex:1; min-width:0;}
+.hw-title{font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.hw-item.is-done .hw-title .t{color:var(--ink-3); text-decoration:line-through;}
+.hw-meta{display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; align-items:center;}
+.hw-times{font-size:12px; color:var(--ink-3); margin-top:6px; display:flex; gap:12px; flex-wrap:wrap;}
+.hw-times .actual{color:var(--primary-deep); font-weight:700;}
+.status-pill{font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; white-space:nowrap;}
+.st-todo{background:var(--blue-soft); color:var(--blue);}
+.st-doing{background:var(--primary-soft); color:var(--primary-deep);}
+.st-done{background:var(--green-soft); color:var(--green);}
+.st-over{background:var(--red-soft); color:var(--red);}
+.st-future{background:var(--bg-soft); color:var(--ink-3);}
+.hw-actions{display:flex; gap:6px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end;}
+.icon-btn{
+  width:34px; height:34px; border-radius:11px; display:flex; align-items:center; justify-content:center;
+  background:var(--bg-soft); color:var(--ink-2); transition:all .15s;
+}
+.icon-btn:hover{background:var(--primary-soft); color:var(--primary-deep);}
+.icon-btn.danger:hover{background:var(--red-soft); color:var(--red);}
+.focus-start-btn{
+  height:34px; padding:0 13px; border-radius:11px; background:var(--primary); color:#fff;
+  font-size:12.5px; font-weight:800; display:inline-flex; align-items:center; gap:5px;
+  box-shadow:0 4px 10px rgba(249,115,22,.3);
+}
+.focus-start-btn:hover{background:var(--primary-deep);}
+
+/* ============ 专注模式 ============ */
+.focus-view{text-align:center; padding:10px 0 4px;}
+.focus-task-name{font-size:19px; font-weight:800; margin-bottom:4px;}
+.focus-task-sub{color:var(--ink-3); font-size:13px;}
+.focus-ring-wrap{position:relative; width:250px; height:250px; margin:26px auto 8px;}
+.focus-ring-wrap svg{transform:rotate(-90deg);}
+.focus-ring-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+.focus-count{font-size:52px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:.02em; line-height:1;}
+.focus-elapsed-label{font-size:12px; color:var(--ink-3); font-weight:600; margin-top:10px;}
+.focus-elapsed{font-size:17px; font-weight:700; color:var(--primary-deep); font-variant-numeric:tabular-nums;}
+.focus-btns{display:flex; gap:10px; justify-content:center; margin-top:22px; flex-wrap:wrap;}
+.focus-hint{font-size:12.5px; color:var(--ink-3); margin-top:16px;}
+
+/* 悬浮计时条 */
+.focus-bar{
+  position:fixed; left:50%; transform:translateX(-50%); bottom:18px; z-index:60;
+  display:none; align-items:center; gap:12px; background:var(--ink); color:#FFF7EE;
+  border-radius:999px; padding:9px 9px 9px 18px; box-shadow:var(--shadow-lg); max-width:calc(100vw - 24px);
+}
+.focus-bar.show{display:flex;}
+.focus-bar .fb-name{font-size:13px; font-weight:700; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.focus-bar .fb-time{font-size:16px; font-weight:800; font-variant-numeric:tabular-nums; color:#FDBA74;}
+.focus-bar .fb-btn{height:32px; padding:0 14px; border-radius:999px; background:rgba(255,255,255,.14); color:#FFF7EE; font-size:12.5px; font-weight:700;}
+.focus-bar .fb-btn:hover{background:rgba(255,255,255,.24);}
+.focus-bar .fb-btn.main{background:var(--primary); color:#fff;}
+.focus-bar .fb-btn.main:hover{background:var(--primary-deep);}
+
+/* ============ 打卡 ============ */
+.week-strip{display:flex; gap:8px; margin-bottom:16px;}
+.week-day{
+  flex:1; text-align:center; padding:10px 4px; border-radius:var(--r-md); background:var(--surface);
+  border:1px solid var(--line); box-shadow:var(--shadow);
+}
+.week-day .wd{font-size:11.5px; color:var(--ink-3); font-weight:700;}
+.week-day .dn{font-size:18px; font-weight:800; margin-top:1px;}
+.week-day.today{border-color:var(--primary); background:var(--primary-ghost);}
+.week-day.today .dn{color:var(--primary-deep);}
+.week-day .marks{display:flex; gap:3px; justify-content:center; margin-top:5px; min-height:6px;}
+.week-day .marks i{width:6px; height:6px; border-radius:50%; background:var(--line-2);}
+.week-day .marks i.done{background:var(--green);}
+.check-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+.check-card{display:flex; flex-direction:column; gap:10px;}
+.check-card.done{border-color:var(--green); background:linear-gradient(180deg,var(--green-soft),var(--surface) 55%);}
+.check-top{display:flex; align-items:flex-start; gap:10px;}
+.check-ic{width:42px; height:42px; border-radius:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.check-name{font-weight:800; font-size:15px; flex:1; min-width:0;}
+.check-freq{font-size:11.5px; color:var(--ink-3); font-weight:600;}
+.check-times{display:flex; gap:14px; font-size:12.5px; color:var(--ink-2); background:var(--bg-soft); border-radius:10px; padding:8px 12px;}
+.check-times b{color:var(--ink);}
+.check-times .pts{margin-left:auto; color:#9A6B12; font-weight:800;}
+@media (prefers-color-scheme: dark){.check-times .pts{color:#F5C26B;}}
+.check-actions{display:flex; gap:8px; margin-top:auto; flex-wrap:wrap;}
+.check-done-note{font-size:12.5px; color:var(--green); font-weight:700; display:flex; align-items:center; gap:5px;}
+
+/* ============ 课程表 ============ */
+.week-nav{display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap;}
+.week-nav .range{font-size:16px; font-weight:800;}
+.week-nav .spacer{flex:1;}
+.switch{display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--ink-2); cursor:pointer; user-select:none;}
+.switch input{display:none;}
+.switch .track{width:40px; height:23px; border-radius:999px; background:var(--line-2); position:relative; transition:background .15s; flex-shrink:0;}
+.switch .track::after{content:""; position:absolute; width:17px; height:17px; border-radius:50%; background:#fff; top:3px; left:3px; transition:left .15s; box-shadow:0 1px 4px rgba(0,0,0,.25);}
+.switch input:checked + .track{background:var(--primary);}
+.switch input:checked + .track::after{left:20px;}
+.timetable{display:grid; grid-template-columns:repeat(7,1fr); gap:10px; align-items:start;}
+.tt-day{background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-md); padding:10px 8px; min-height:120px;}
+.tt-day.today{border-color:var(--primary); background:var(--primary-ghost);}
+.tt-day-head{text-align:center; padding-bottom:8px; border-bottom:1px dashed var(--line-2); margin-bottom:8px;}
+.tt-day-head .wd{font-size:12px; font-weight:700; color:var(--ink-2);}
+.tt-day-head .dn{font-size:17px; font-weight:800;}
+.tt-day.today .tt-day-head .dn{color:var(--primary-deep);}
+.holiday-tag{font-size:10px; font-weight:800; color:var(--red); background:var(--red-soft); border-radius:999px; padding:1px 6px; display:inline-block; margin-top:2px;}
+.tt-course{
+  border-radius:12px; padding:9px 10px; margin-bottom:8px; font-size:12px; cursor:pointer;
+  border:1px solid transparent; transition:transform .12s; position:relative;
+}
+.tt-course:hover{transform:translateY(-1px);}
+.tt-course .cn{font-weight:800; font-size:12.5px; line-height:1.4;}
+.tt-course .ct{color:inherit; opacity:.75; font-variant-numeric:tabular-nums; font-weight:600;}
+.tt-course .cm{opacity:.75; margin-top:2px; line-height:1.5;}
+.tt-course.suspended{opacity:.55; filter:grayscale(.5);}
+.tt-course.suspended .cn{text-decoration:line-through;}
+.susp-tag{position:absolute; top:6px; right:6px; font-size:9.5px; font-weight:800; background:var(--red); color:#fff; padding:1px 6px; border-radius:999px;}
+.tt-empty{font-size:11px; color:var(--ink-3); text-align:center; padding:10px 0;}
+
+/* ============ 错题本 ============ */
+.mistake-list{display:flex; flex-direction:column; gap:12px;}
+.mistake-item{display:flex; gap:14px;}
+.mistake-item .m-body{flex:1; min-width:0;}
+.m-q{font-weight:700; font-size:15px;}
+.m-row{font-size:13px; color:var(--ink-2); margin-top:5px; line-height:1.65;}
+.m-row b{color:var(--ink);}
+.m-row .lbl{display:inline-block; font-size:11px; font-weight:800; padding:1px 7px; border-radius:6px; margin-right:6px; vertical-align:1px;}
+.lbl-err{background:var(--red-soft); color:var(--red);}
+.lbl-fix{background:var(--green-soft); color:var(--green);}
+.stars{display:inline-flex; gap:2px; vertical-align:middle;}
+.star-btn{color:var(--line-2); padding:1px; line-height:0;}
+.star-btn.on{color:var(--gold);}
+.review-due{display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700;}
+.review-due.over{color:var(--red);}
+.review-due.today{color:var(--primary-deep);}
+.review-due.future{color:var(--ink-3);}
+
+/* ============ 积分 ============ */
+.points-hero{display:flex; align-items:center; gap:18px; flex-wrap:wrap;}
+.points-num{font-size:42px; font-weight:800; color:var(--primary-deep); line-height:1;}
+.points-hero .lbl{font-size:13px; color:var(--ink-3); font-weight:600;}
+.ledger-list{display:flex; flex-direction:column;}
+.ledger-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px dashed var(--line); font-size:13.5px;}
+.ledger-row:last-child{border-bottom:none;}
+.ledger-row .why{flex:1; min-width:0;}
+.ledger-row .when{font-size:11.5px; color:var(--ink-3); white-space:nowrap;}
+.ledger-amt{font-weight:800; white-space:nowrap;}
+.ledger-amt.plus{color:var(--green);}
+.ledger-amt.minus{color:var(--red);}
+.reward-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));}
+.reward-card{text-align:left;}
+.reward-card .r-name{font-weight:800; font-size:15px; margin-top:8px;}
+.reward-card .r-cost{font-size:12.5px; color:#9A6B12; font-weight:800; margin-top:3px;}
+@media (prefers-color-scheme: dark){.reward-card .r-cost{color:#F5C26B;}}
+.rule-list{display:flex; flex-direction:column; gap:8px; font-size:13.5px; color:var(--ink-2);}
+.rule-list li{list-style:none; display:flex; gap:8px;}
+.rule-list li::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--primary); margin-top:8px; flex-shrink:0;}
+
+/* ============ 报告 ============ */
+.report-grid{grid-template-columns:1fr 1fr; align-items:start;}
+.report-summary{font-size:14.5px; line-height:1.85;}
+.report-summary p{margin-bottom:10px;}
+.kv{display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed var(--line); font-size:13.5px;}
+.kv:last-child{border-bottom:none;}
+.kv b{font-variant-numeric:tabular-nums;}
+canvas.chart{width:100%; height:auto; display:block;}
+
+/* ============ 设置 ============ */
+.form-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.field{display:flex; flex-direction:column; gap:6px;}
+.field.full{grid-column:1/-1;}
+.field label{font-size:13px; font-weight:700; color:var(--ink-2);}
+.field input,.field select,.field textarea{
+  padding:10px 13px; border:1.5px solid var(--line-2); border-radius:var(--r-sm);
+  background:var(--surface); font-size:14px; transition:border-color .15s; width:100%;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none; border-color:var(--primary);}
+.field .hint{font-size:11.5px; color:var(--ink-3);}
+.field .err{font-size:11.5px; color:var(--red); font-weight:600; display:none;}
+.field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--red);}
+.field.invalid .err{display:block;}
+.settings-row{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+.settings-row .desc{flex:1; min-width:200px;}
+.settings-row .desc b{display:block; font-size:14px;}
+.settings-row .desc span{font-size:12px; color:var(--ink-3);}
+
+/* ============ 弹窗 / 通知 ============ */
+.modal-mask{
+  position:fixed; inset:0; background:rgba(40,22,5,.45); z-index:80; display:none;
+  align-items:flex-end; justify-content:center; padding:0;
+}
+.modal-mask.show{display:flex;}
+.modal{
+  background:var(--surface); width:100%; max-width:560px; max-height:92vh; overflow-y:auto;
+  border-radius:22px 22px 0 0; padding:24px; animation:slideUp .22s ease;
+}
+@media(min-width:640px){.modal-mask{align-items:center; padding:20px;} .modal{border-radius:22px;}}
+@keyframes slideUp{from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:none;}}
+.modal h3{font-size:18px; font-weight:800; margin-bottom:16px; display:flex; align-items:center;}
+.modal h3 .x{margin-left:auto;}
+.modal-foot{display:flex; gap:10px; justify-content:flex-end; margin-top:20px; flex-wrap:wrap;}
+.toast-wrap{position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:100; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; width:max-content; max-width:calc(100vw - 32px);}
+.toast{
+  background:var(--ink); color:#FFF7EE; padding:11px 20px; border-radius:999px; font-size:13.5px; font-weight:600;
+  box-shadow:var(--shadow-lg); animation:toastIn .25s ease; display:flex; gap:8px; align-items:center; max-width:100%;
+}
+@keyframes toastIn{from{opacity:0; transform:translateY(-8px);} to{opacity:1; transform:none;}}
+.confirm-text{font-size:14.5px; line-height:1.7; color:var(--ink-2);}
+
+/* ============ 响应式 ============ */
+@media(max-width:960px){
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .two-col,.report-grid{grid-template-columns:1fr;}
+  .timetable{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:720px){
+  .app{flex-direction:column;}
+  .sidebar{
+    width:100%; height:auto; position:sticky; top:0; z-index:50; padding:10px 12px;
+    border-right:none; border-bottom:1px solid var(--line);
+  }
+  .brand{padding:0 4px 8px;}
+  .brand-sub{display:none;}
+  .nav{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding-bottom:2px;}
+  .nav-item{flex-direction:column; justify-content:center; gap:4px; padding:8px 4px; font-size:11px; position:relative; text-align:center;}
+  .nav-item .nav-label{display:block; font-size:11px;}
+  .nav-badge{position:absolute; top:3px; right:5px; margin:0; min-width:17px; height:17px; font-size:10px;}
+  .stat-num{font-size:20px;}
+  .side-foot{display:none;}
+  .main{padding:18px 14px 120px;}
+  .form-grid{grid-template-columns:1fr;}
+  .check-grid{grid-template-columns:1fr;}
+  .focus-ring-wrap{width:210px; height:210px;}
+  .focus-count{font-size:42px;}
+  .week-strip{gap:5px;}
+  .week-day .dn{font-size:15px;}
+  .hw-item{flex-wrap:wrap;}
+  .hw-actions{width:100%; justify-content:flex-start; padding-left:39px;}
+}
+@media print{
+  .sidebar,.focus-bar,.toast-wrap,.no-print{display:none !important;}
+  .main{padding:0;}
+  .page{display:none !important;}
+  #page-report{display:block !important;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ 侧边导航 ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">学航助手</div>
+        <div class="brand-sub">小学生学习规划管理</div>
+      </div>
+    </div>
+    <nav class="nav" id="mainNav" aria-label="主导航"></nav>
+    <div class="side-foot">
+      <div class="who" id="sideStudent">小航同学</div>
+      <div class="meta" id="sideMeta">家长模式 · 管理员</div>
+    </div>
+  </aside>
+
+  <!-- ============ 主区域 ============ -->
+  <main class="main">
+
+    <!-- 首页仪表盘 -->
+    <section class="page" id="page-home">
+      <div class="greet">
+        <h1 id="greetTitle">早上好</h1>
+        <p id="greetSub"></p>
+      </div>
+      <div class="grid stat-grid" id="statGrid"></div>
+      <div class="grid two-col">
+        <div style="display:flex; flex-direction:column; gap:16px; min-width:0;">
+          <div class="card">
+            <h2>今日课程 <span class="more" data-goto="schedule">查看课程表 →</span></h2>
+            <div class="mini-list" id="todayCourses"></div>
+          </div>
+          <div class="card">
+            <h2>近 7 天专注时长</h2>
+            <div style="margin-top:12px;"><canvas class="chart" id="homeFocusChart" width="640" height="220"></canvas></div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px; min-width:0;">
+          <div class="card advice-card">
+            <h2>今日教育建议</h2>
+            <div class="txt" id="adviceTxt"></div>
+            <div class="why" id="adviceWhy"></div>
+          </div>
+          <div class="card">
+            <h2>待办速览（今日 + 逾期） <span class="more" data-goto="homework">去作业页 →</span></h2>
+            <div class="mini-list" id="todayTodo"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 作业管理 -->
+    <section class="page" id="page-homework">
+      <div class="page-head">
+        <h1>作业管理</h1>
+        <div class="sub">先计划、再专注、后复盘——每一份作业都是一次小小的项目管理练习。</div>
+      </div>
+      <div class="edu-tip"><b>教育提示</b><span>和孩子一起估算每项作业的用时，再用专注计时验证。估时越准，时间感越强，这是五年级最值得练的元认知能力。</span></div>
+      <div class="filter-block card" style="padding:14px 16px;">
+        <div class="row"><span class="f-label">学科</span><span id="fSubject"></span></div>
+        <div class="row"><span class="f-label">来源</span><span id="fSource"></span></div>
+        <div class="row"><span class="f-label">状态</span><span id="fStatus"></span>
+          <span style="flex:1"></span>
+          <button class="btn btn-primary btn-sm" id="btnTodayHw">今日作业</button>
+          <button class="btn btn-soft btn-sm" id="btnAddHw">＋ 新增作业</button>
+        </div>
+      </div>
+      <div id="hwGroups"></div>
+    </section>
+
+    <!-- 专注打卡 -->
+    <section class="page" id="page-checkin">
+      <div class="page-head">
+        <h1>专注打卡</h1>
+        <div class="sub">好习惯是每天重复的小胜利，连续性比单次时长更重要。</div>
+      </div>
+      <div class="edu-tip"><b>教育提示</b><span>打卡的意义在于“不中断的链条”。偶尔漏打卡不要责备，陪孩子一起把链条重新接上，比追求完美更重要。</span></div>
+      <div class="week-strip" id="weekStrip"></div>
+      <div class="filters" id="checkTabs" style="margin-bottom:16px;"></div>
+      <div class="grid check-grid" id="checkGrid"></div>
+      <div style="margin-top:18px; text-align:center;">
+        <button class="btn btn-primary" id="btnAddCheck">＋ 新增打卡计划</button>
+      </div>
+    </section>
+
+    <!-- 课程表 -->
+    <section class="page" id="page-schedule">
+      <div class="page-head">
+        <h1>课程表</h1>
+        <div class="sub">一周安排一目了然，留白的时间和课程一样重要。</div>
+      </div>
+      <div class="edu-tip"><b>教育提示</b><span>排课时注意“动静交替”：高强度课程之间留出休息与户外时间。大脑的巩固往往发生在放松的间隙里。</span></div>
+      <div class="week-nav">
+        <button class="btn btn-ghost btn-sm" id="btnPrevWeek">← 上一周</button>
+        <button class="btn btn-ghost btn-sm" id="btnThisWeek">本周</button>
+        <button class="btn btn-ghost btn-sm" id="btnNextWeek">下一周 →</button>
+        <span class="range" id="weekRange"></span>
+        <span class="spacer"></span>
+        <label class="switch"><input type="checkbox" id="toggleSchool" checked><span class="track"></span>显示校内课</label>
+        <button class="btn btn-primary btn-sm" id="btnAddCourse">＋ 新增课程</button>
+      </div>
+      <div class="timetable" id="timetable"></div>
+    </section>
+
+    <!-- 错题本 -->
+    <section class="page" id="page-mistakes">
+      <div class="page-head">
+        <h1>错题本</h1>
+        <div class="sub">错题不是失败的证据，而是大脑升级的入口。</div>
+      </div>
+      <div class="edu-tip"><b>教育提示</b><span>按艾宾浩斯遗忘曲线，在 1、2、4、7、15、30 天后各复习一次，记忆留存率可从 20% 提升到 90% 以上。复习时先遮住答案，自己讲一遍思路。</span></div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2>今日待复习 <span class="tag" id="dueCountTag" style="background:var(--primary-soft); color:var(--primary-deep);"></span></h2>
+        <div id="dueList" style="margin-top:8px;"></div>
+      </div>
+      <div class="filters" id="mistakeTabs" style="margin-bottom:14px;"></div>
+      <div class="mistake-list" id="mistakeList"></div>
+      <div style="margin-top:18px; text-align:center;">
+        <button class="btn btn-primary" id="btnAddMistake">＋ 记录错题</button>
+      </div>
+    </section>
+
+    <!-- 积分中心 -->
+    <section class="page" id="page-points">
+      <div class="page-head">
+        <h1>积分中心</h1>
+        <div class="sub">积分奖励的是努力的过程，而不只是结果。</div>
+      </div>
+      <div class="edu-tip"><b>教育提示</b><span>奖励要具体、及时、可预期：完成就加分，攒够就兑换。避免用积分惩罚或收回已得积分，那会迅速消解孩子的信任感。</span></div>
+      <div class="grid two-col" style="margin-bottom:16px;">
+        <div class="card points-hero">
+          <div>
+            <div class="lbl">当前积分余额</div>
+            <div class="points-num" id="pointsNum">0</div>
+          </div>
+          <div style="flex:1; min-width:180px;">
+            <div class="lbl" style="margin-bottom:6px;">积分规则</div>
+            <ul class="rule-list">
+              <li>完成一项作业：按作业标注积分发放（默认 +5）</li>
+              <li>完成一次专注打卡：按计划标注积分发放</li>
+              <li>复习一道错题：+2 分</li>
+              <li>积分只增不扣，兑换奖励时扣除相应分值</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <h2>奖励兑换 <span class="more" id="btnAddReward">＋ 新增奖励</span></h2>
+          <div class="grid reward-grid" id="rewardGrid" style="margin-top:14px;"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>积分明细</h2>
+        <div class="ledger-list" id="ledgerList" style="margin-top:8px;"></div>
+      </div>
+    </section>
+
+    <!-- 成长报告 -->
+    <section class="page" id="page-report">
+      <div class="page-head" style="display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:220px;">
+          <h1>成长报告</h1>
+          <div class="sub">把一周的努力，翻译成孩子听得懂的鼓励。</div>
+        </div>
+      </div>
+      <div class="edu-tip"><b>教育提示</b><span>和孩子复盘时，多用“你发现了吗”代替“你应该”：让他自己说出进步，比被表扬更能建立内在动力。</span></div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2 id="reportTitle">本周成长小结</h2>
+        <div class="report-summary" id="reportSummary" style="margin-top:10px;"></div>
+      </div>
+      <div class="grid report-grid">
+        <div class="card">
+          <h2>本周专注时长趋势</h2>
+          <div style="margin-top:12px;"><canvas class="chart" id="reportFocusChart" width="560" height="240"></canvas></div>
+        </div>
+        <div class="card">
+          <h2>学科时间分布（本周）</h2>
+          <div style="margin-top:12px;"><canvas class="chart" id="reportSubjectChart" width="560" height="240"></canvas></div>
+        </div>
+        <div class="card">
+          <h2>本周关键数据</h2>
+          <div id="reportKv" style="margin-top:6px;"></div>
+        </div>
+        <div class="card">
+          <h2>积分趋势（近 7 天）</h2>
+          <div style="margin-top:12px;"><canvas class="chart" id="reportPointsChart" width="560" height="240"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 设置 -->
+    <section class="page" id="page-settings">
+      <div class="page-head">
+        <h1>设置</h1>
+        <div class="sub">学生信息与数据管理。数据保存在本机浏览器中，可随时导出备份。</div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2>学生信息</h2>
+        <form id="studentForm" style="margin-top:16px;">
+          <div class="form-grid">
+            <div class="field"><label for="setName">学生姓名</label><input id="setName" type="text" maxlength="20" placeholder="如：小航"></div>
+            <div class="field"><label for="setGrade">年级</label>
+              <select id="setGrade">
+                <option>一年级</option><option>二年级</option><option>三年级</option><option>四年级</option>
+                <option selected>五年级</option><option>六年级</option>
+              </select>
+            </div>
+            <div class="field"><label for="setTerm">当前学期</label><input id="setTerm" type="text" maxlength="20" placeholder="如：五上 · 秋学期"></div>
+            <div class="field"><label for="setPomodoro">默认专注时长（分钟）</label><input id="setPomodoro" type="number" min="5" max="120" step="5"><span class="hint">新增作业时默认填入的计划用时</span></div>
+          </div>
+          <div style="margin-top:18px;"><button type="submit" class="btn btn-primary">保存设置</button></div>
+        </form>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2>数据管理</h2>
+        <div style="display:flex; flex-direction:column; gap:18px; margin-top:16px;">
+          <div class="settings-row">
+            <div class="desc"><b>导出备份</b><span>把全部数据下载为 JSON 文件，可存到电脑或网盘。</span></div>
+            <button class="btn btn-soft" id="btnExport">导出 JSON</button>
+          </div>
+          <div class="settings-row">
+            <div class="desc"><b>导入恢复</b><span>从之前导出的 JSON 文件恢复数据（会覆盖当前数据）。</span></div>
+            <button class="btn btn-soft" id="btnImport">导入 JSON</button>
+            <input type="file" id="importFile" accept="application/json,.json" hidden>
+          </div>
+          <div class="settings-row">
+            <div class="desc"><b>清空数据</b><span>删除全部作业、打卡、课程、错题与积分记录，恢复为初始演示数据。此操作不可恢复。</span></div>
+            <button class="btn btn-danger-soft" id="btnReset">清空并重置</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>使用小贴士</h2>
+        <ul class="rule-list" style="margin-top:12px;">
+          <li>数据保存在打开本页面的浏览器里；换设备使用时，请先在旧设备导出 JSON，再到新设备导入。</li>
+          <li>专注计时中途刷新页面也没关系：计时会从断点自动恢复，悬浮条在所有页面都能看到。</li>
+          <li>建议每周日晚打开「成长报告」，和孩子一起花 5 分钟复盘，再一起定下周的小目标。</li>
+          <li>作业的“计划用时”尽量让孩子自己估，估得准比做得快更值得表扬。</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- 悬浮计时条 -->
+<div class="focus-bar" id="focusBar" role="status" aria-label="专注计时进行中">
+  <span class="fb-name" id="fbName"></span>
+  <span class="fb-time" id="fbTime">00:00</span>
+  <button class="fb-btn" id="fbToggle">暂停</button>
+  <button class="fb-btn main" id="fbFinish">完成</button>
+</div>
+
+<!-- 通用弹窗 -->
+<div class="modal-mask" id="modalMask">
+  <div class="modal" role="dialog" aria-modal="true" id="modalBox"></div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
