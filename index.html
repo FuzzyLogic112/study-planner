@@ -4,8 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<link rel="icon" href="data:,">
-<title>学航助手 · 小学生学习规划管理</title>
+<meta name="theme-color" content="#F97316">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="manifest" href="manifest.json">
+<title>学航助手 · 全学段学习规划</title>
 <style>
 /* ============ 设计令牌 ============ */
 :root{
@@ -23,6 +26,26 @@
   --r-lg:20px; --r-md:16px; --r-sm:12px;
   --nav-w:216px;
 }
+/* 手动主题（优先级高于跟随系统） */
+html[data-theme="light"]{
+  --bg:#FFF9F2; --bg-soft:#FFF3E6; --surface:#FFFFFF; --surface-2:#FFF7EE;
+  --ink:#2D2418; --ink-2:#6B5D4F; --ink-3:#A08F7D;
+  --line:#F3E4D5; --line-2:#EAD8C4;
+  --primary-soft:#FFEEDD; --primary-ghost:#FFF5EA;
+  --green-soft:#E2F5EC; --red-soft:#FDEBEA; --blue-soft:#E7F0FE; --gold-soft:#FDF1DC; --purple-soft:#EFE9FE;
+  --shadow:0 2px 10px rgba(180,110,40,.07), 0 10px 30px rgba(180,110,40,.05);
+  --shadow-lg:0 12px 40px rgba(120,60,10,.18);
+}
+html[data-theme="dark"]{
+  --bg:#1C1712; --bg-soft:#251D15; --surface:#2A2119; --surface-2:#241B13;
+  --ink:#F5EDE3; --ink-2:#C9B9A8; --ink-3:#8F7F6E;
+  --line:#3A2E21; --line-2:#4A3B2B;
+  --primary-soft:#4A2E14; --primary-ghost:#33261A;
+  --green-soft:#17352A; --red-soft:#3D2222; --blue-soft:#1E2B45; --gold-soft:#3A2E16; --purple-soft:#2B2340;
+  --shadow:0 2px 10px rgba(0,0,0,.25), 0 10px 30px rgba(0,0,0,.2);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.5);
+}
+html[data-theme="dark"] .tag-points, html[data-theme="dark"] .check-times .pts, html[data-theme="dark"] .reward-card .r-cost{color:#F5C26B;}
 @media (prefers-color-scheme: dark){
   :root{
     --bg:#1C1712; --bg-soft:#251D15; --surface:#2A2119; --surface-2:#241B13;
@@ -170,7 +193,7 @@ input,select,textarea{font:inherit; color:inherit;}
 .advice-card .txt{font-size:14.5px; line-height:1.75; color:var(--ink); margin-top:8px;}
 .advice-card .why{font-size:12.5px; color:var(--ink-3); margin-top:6px;}
 
-/* ============ 作业 ============ */
+/* ============ 任务 ============ */
 .filters{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; align-items:center;}
 .filters .f-label{font-size:12.5px; font-weight:700; color:var(--ink-3); margin-right:2px;}
 .filter-block{margin-bottom:14px;}
@@ -435,6 +458,120 @@ canvas.chart{width:100%; height:auto; display:block;}
   #page-report{display:block !important;}
   body{background:#fff;}
 }
+
+/* ============ 目标管理（第2轮） ============ */
+.goal-banner{display:flex; gap:14px; align-items:center;}
+.goal-banner-ic{width:46px; height:46px; border-radius:14px; background:var(--primary-soft); color:var(--primary-deep); display:flex; align-items:center; justify-content:center; flex:none;}
+.goal-banner-top{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;}
+.goal-banner-top b{font-size:15px;}
+.pbar{height:8px; border-radius:99px; background:var(--line); overflow:hidden;}
+.pbar>i{display:block; height:100%; border-radius:99px; background:linear-gradient(90deg, var(--primary), var(--primary-deep)); transition:width .4s;}
+.pbar.big{height:10px;}
+.goal-card .goal-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;}
+.goal-title{font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px;}
+.goal-meta{display:flex; flex-wrap:wrap; gap:8px 14px; color:var(--ink-3); font-size:12.5px; margin-top:6px; align-items:center;}
+.goal-ops{display:flex; gap:4px; flex:none;}
+.ms-list{display:flex; flex-direction:column; gap:6px; margin-top:4px;}
+.ms-row{display:flex; align-items:center; gap:10px; text-align:left; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:9px 12px; font-size:13.5px; cursor:pointer; width:100%;}
+.ms-row:hover{border-color:var(--primary);}
+.ms-box{width:20px; height:20px; border-radius:7px; border:2px solid var(--line-2); display:flex; align-items:center; justify-content:center; color:#fff; flex:none; background:#fff;}
+.ms-row.done .ms-box{background:var(--green); border-color:var(--green);}
+.ms-row.done span:last-child{text-decoration:line-through; color:var(--ink-3);}
+.goal-done{opacity:.75;}
+.link-btn{background:none; border:none; color:var(--primary-deep); font-size:13px; font-weight:700; cursor:pointer; padding:0;}
+.link-btn:hover{text-decoration:underline;}
+
+/* ============ 专注升级（第3轮） ============ */
+.focus-round{text-align:center; color:var(--ink-3); font-size:13px; margin-bottom:6px;}
+.noise-row{display:flex; align-items:center; justify-content:center; gap:10px; margin:4px 0 14px; font-size:13px; color:var(--ink-3);}
+.noise-btns{display:flex; gap:6px;}
+.noise-btns button{border:1.5px solid var(--line-2); background:var(--bg); color:var(--ink-2); border-radius:99px; padding:5px 12px; font-size:12.5px; cursor:pointer;}
+.noise-btns button.on{border-color:var(--primary); color:var(--primary-deep); background:var(--primary-soft); font-weight:700;}
+.heatmap{display:grid; grid-template-columns:repeat(12, 1fr); gap:5px;}
+.hm-day{aspect-ratio:1; border-radius:4px; background:var(--line); display:block; min-width:0;}
+.hm-day.lv1{background:#FED7AA;}
+.hm-day.lv2{background:#FDBA74;}
+.hm-day.lv3{background:#FB923C;}
+.hm-day.lv4{background:#EA580C;}
+.heatmap-legend{display:flex; align-items:center; gap:5px; margin-top:10px; font-size:12px; color:var(--ink-3);}
+.heatmap-legend .hm-day{width:14px; height:14px; aspect-ratio:auto;}
+
+/* ============ 复习中心（第4轮） ============ */
+.rq-progress{font-size:12.5px; color:var(--ink-3); margin-bottom:10px; font-weight:600;}
+.rq-card{background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:16px;}
+.rq-title{font-size:16px; font-weight:800; margin-bottom:8px;}
+.rq-detail{font-size:13.5px; color:var(--ink-2); background:var(--card); border:1px dashed var(--line-2); border-radius:10px; padding:10px 12px; margin-bottom:10px; white-space:pre-wrap;}
+.rq-fix{margin:10px 0;}
+.rq-ops{display:flex; gap:8px; margin-top:6px;}
+.rq-grades{margin-top:10px;}
+.rq-grades>span{font-size:13px; color:var(--ink-3); font-weight:600;}
+.rq-grade-btns{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;}
+.rq-grade-btns button{flex:1; min-width:64px; border:1.5px solid var(--line-2); background:var(--card); border-radius:10px; padding:9px 0; font-size:13.5px; font-weight:700; cursor:pointer;}
+.rq-grade-btns button:hover{transform:translateY(-1px);}
+.rq-grade-btns .g1{color:#E0524D; border-color:#F3B8B5;}
+.rq-grade-btns .g3{color:#F59E0B; border-color:#F5D78E;}
+.rq-grade-btns .g4{color:#3B82F6; border-color:#A9C6F7;}
+.rq-grade-btns .g5{color:#22A06B; border-color:#8FD8B2;}
+
+/* ============ 考试倒计时（第5轮） ============ */
+.exam-strip{display:flex; gap:10px; flex-wrap:wrap;}
+.exam-chip{display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 16px; cursor:pointer; box-shadow:var(--shadow-sm);}
+.exam-chip:hover{border-color:var(--primary);}
+.exam-name{font-size:13.5px; font-weight:700;}
+.exam-days{font-size:12px; color:var(--ink-3);}
+.exam-days b{font-size:20px; color:var(--primary-deep); margin-right:2px;}
+.exam-card{display:flex; gap:16px; align-items:center;}
+.exam-card.past{opacity:.6;}
+.exam-big{background:linear-gradient(135deg, var(--primary), var(--primary-deep)); color:#fff; border-radius:16px; min-width:92px; text-align:center; padding:12px 8px; flex:none;}
+.exam-big b{font-size:30px; display:block; line-height:1.1;}
+.exam-big span{font-size:12px; opacity:.9;}
+.exam-title{font-size:16px; font-weight:800;}
+
+/* ============ 课程表升级（第6轮） ============ */
+.tt-course{position:relative;}
+.tt-course.on-leave{opacity:.55;}
+.leave-tag{position:absolute; top:6px; right:6px; background:var(--gold-soft); color:#9A6B12; font-size:10.5px; font-weight:700; border-radius:6px; padding:2px 6px;}
+.susp-tag{position:absolute; top:6px; right:6px;}
+.leave-btn{margin-top:6px; border:1px dashed var(--line-2); background:transparent; color:inherit; font-size:11px; border-radius:8px; padding:3px 10px; cursor:pointer; opacity:.85;}
+.leave-btn:hover{opacity:1; border-style:solid;}
+
+/* ============ 自测组卷（第7轮） ============ */
+.qz-runner{max-width:720px; margin:0 auto;}
+.qz-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.qz-count{font-weight:800;}
+.qz-timer{display:flex; align-items:center; gap:6px; color:var(--primary-deep); font-weight:800;}
+.qz-stem{font-size:16px; font-weight:700; margin:6px 0 16px; line-height:1.6;}
+.qz-opts{display:flex; flex-direction:column; gap:10px;}
+.qz-opt{display:flex; align-items:center; gap:12px; text-align:left; border:1.5px solid var(--line-2); background:var(--bg); border-radius:12px; padding:12px 14px; font-size:14.5px; cursor:pointer; width:100%;}
+.qz-opt:hover{border-color:var(--primary);}
+.qz-opt.sel{border-color:var(--primary); background:var(--primary-soft); font-weight:700;}
+.qz-key{width:30px; height:30px; border-radius:9px; background:var(--card); border:1px solid var(--line-2); display:flex; align-items:center; justify-content:center; font-weight:800; flex:none;}
+.qz-opt.sel.qz-key{background:var(--primary); border-color:var(--primary); color:#fff;}
+.qz-fill{width:100%; border:1.5px solid var(--line-2); border-radius:12px; padding:12px 14px; font-size:15px; background:var(--bg);}
+.qz-nav{display:flex; justify-content:space-between; margin-top:20px;}
+.qz-review{border:1px solid var(--line); border-radius:12px; padding:12px 14px; background:var(--bg);}
+.qz-review.ok{border-left:4px solid var(--green);}
+.qz-review:not(.ok){border-left:4px solid var(--red);}
+
+/* ============ 资料库（第9轮） ============ */
+.res-card{padding:16px 18px;}
+.res-link{display:inline-block; margin-top:4px; color:var(--primary-deep); font-weight:700; font-size:13.5px; text-decoration:none;}
+.res-link:hover{text-decoration:underline;}
+
+/* ============ 场景模板（第11轮） ============ */
+.tpl-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; margin-top:6px;}
+.tpl-card{background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:16px;}
+.tpl-card:hover{border-color:var(--primary);}
+.tpl-emoji{font-size:30px; margin-bottom:8px;}
+.tpl-name{font-size:15px; font-weight:800;}
+
+/* ============ 体验工程（第12轮） ============ */
+@media (max-width:640px){
+  .heatmap{grid-template-columns:repeat(6, 1fr);}
+  .exam-card{flex-wrap:wrap;}
+  .tpl-grid{grid-template-columns:1fr 1fr;}
+  .goal-banner-top{flex-direction:column; align-items:flex-start;}
+}
 </style>
 </head>
 <body>
@@ -448,7 +585,7 @@ canvas.chart{width:100%; height:auto; display:block;}
       </div>
       <div>
         <div class="brand-name">学航助手</div>
-        <div class="brand-sub">小学生学习规划管理</div>
+        <div class="brand-sub">全学段学习规划</div>
       </div>
     </div>
     <nav class="nav" id="mainNav" aria-label="主导航"></nav>
@@ -467,6 +604,8 @@ canvas.chart{width:100%; height:auto; display:block;}
         <h1 id="greetTitle">早上好</h1>
         <p id="greetSub"></p>
       </div>
+      <div id="goalBanner"></div>
+      <div id="examStrip" style="margin-bottom:16px;"></div>
       <div class="grid stat-grid" id="statGrid"></div>
       <div class="grid two-col">
         <div style="display:flex; flex-direction:column; gap:16px; min-width:0;">
@@ -486,27 +625,78 @@ canvas.chart{width:100%; height:auto; display:block;}
             <div class="why" id="adviceWhy"></div>
           </div>
           <div class="card">
-            <h2>待办速览（今日 + 逾期） <span class="more" data-goto="homework">去作业页 →</span></h2>
+            <h2>待办速览（今日 + 逾期） <span class="more" data-goto="homework">去任务页 →</span></h2>
             <div class="mini-list" id="todayTodo"></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 作业管理 -->
+    <!-- 目标管理 -->
+    <section class="page" id="page-goals">
+      <div class="page-head">
+        <h1>目标管理</h1>
+        <div class="sub">把大目标拆成小里程碑，每完成一个就离目标更近一步。</div>
+      </div>
+      <div class="edu-tip"><b>教育提示</b><span>目标要具体、可衡量：与其写"提高英语"，不如写"30 天背完 600 个考研单词"。目标让本人参与制定，他才会真正认领。</span></div>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
+        <button class="btn btn-primary btn-sm" id="btnAddGoal">＋ 新建目标</button>
+      </div>
+      <div id="goalList" style="display:flex; flex-direction:column; gap:14px;"></div>
+    </section>
+
+    <!-- 资料库 -->
+    <section class="page" id="page-resources">
+      <div class="page-head">
+        <h1>资料库</h1>
+        <div class="sub">好资料值得被收藏，更值得被用完。</div>
+      </div>
+      <div class="edu-tip"><b>教育提示</b><span>资料不在多，在精：每份资料备注一句“看到哪了”，下次打开直接续上。定期清理过期资料，保持书架清爽。</span></div>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
+        <button class="btn btn-primary btn-sm" id="btnAddRes">＋ 添加资料</button>
+      </div>
+      <div class="filters" id="resKindTabs" style="margin-bottom:10px;"></div>
+      <div class="filters" id="resSubjTabs" style="margin-bottom:14px;"></div>
+      <div id="resList" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </section>
+
+    <!-- 自测组卷 -->
+<section class="page" id="page-quiz">
+<div class="page-head">
+<h1>自测组卷</h1>
+<div class="sub">把做过的题攒成题库，定期组卷检验——输出是最好的输入。</div>
+</div>
+<div class="edu-tip"><b>教育提示</b><span>“测试效应”是最被低估的学习方法：合上书回忆、做题自测，比重复阅读有效得多。每周一次自测，查漏补缺。</span></div>
+<div id="quizBody"></div>
+</section>
+
+ <!-- 考试倒计时 -->
+    <section class="page" id="page-exams">
+      <div class="page-head">
+        <h1>考试倒计时</h1>
+        <div class="sub">把“还有多少天”放在每天看得见的地方，自律就有了形状。</div>
+      </div>
+      <div class="edu-tip"><b>教育提示</b><span>倒计时不是制造焦虑，而是把模糊的压力变成具体的计划：用总天数除以待办事项，每天该做什么一目了然。</span></div>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
+        <button class="btn btn-primary btn-sm" id="btnAddExam">＋ 添加考试</button>
+      </div>
+      <div id="examList" style="display:flex; flex-direction:column; gap:14px;"></div>
+    </section>
+
+    <!-- 任务管理 -->
     <section class="page" id="page-homework">
       <div class="page-head">
-        <h1>作业管理</h1>
-        <div class="sub">先计划、再专注、后复盘——每一份作业都是一次小小的项目管理练习。</div>
+        <h1>任务管理</h1>
+        <div class="sub">先计划、再专注、后复盘——每一份任务都是一次小小的项目管理练习。</div>
       </div>
-      <div class="edu-tip"><b>教育提示</b><span>和孩子一起估算每项作业的用时，再用专注计时验证。估时越准，时间感越强，这是五年级最值得练的元认知能力。</span></div>
+      <div class="edu-tip"><b>教育提示</b><span>和孩子一起估算每项任务的用时，再用专注计时验证。估时越准，时间感越强，这是五年级最值得练的元认知能力。</span></div>
       <div class="filter-block card" style="padding:14px 16px;">
         <div class="row"><span class="f-label">学科</span><span id="fSubject"></span></div>
         <div class="row"><span class="f-label">来源</span><span id="fSource"></span></div>
         <div class="row"><span class="f-label">状态</span><span id="fStatus"></span>
           <span style="flex:1"></span>
-          <button class="btn btn-primary btn-sm" id="btnTodayHw">今日作业</button>
-          <button class="btn btn-soft btn-sm" id="btnAddHw">＋ 新增作业</button>
+          <button class="btn btn-primary btn-sm" id="btnTodayHw">今日任务</button>
+          <button class="btn btn-soft btn-sm" id="btnAddHw">＋ 新增任务</button>
         </div>
       </div>
       <div id="hwGroups"></div>
@@ -519,11 +709,13 @@ canvas.chart{width:100%; height:auto; display:block;}
         <div class="sub">好习惯是每天重复的小胜利，连续性比单次时长更重要。</div>
       </div>
       <div class="edu-tip"><b>教育提示</b><span>打卡的意义在于“不中断的链条”。偶尔漏打卡不要责备，陪孩子一起把链条重新接上，比追求完美更重要。</span></div>
+      <div class="card" id="sleepCard" style="margin-bottom:16px;"></div>
       <div class="week-strip" id="weekStrip"></div>
       <div class="filters" id="checkTabs" style="margin-bottom:16px;"></div>
       <div class="grid check-grid" id="checkGrid"></div>
-      <div style="margin-top:18px; text-align:center;">
+      <div style="margin-top:18px; text-align:center; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
         <button class="btn btn-primary" id="btnAddCheck">＋ 新增打卡计划</button>
+        <button class="btn btn-soft" id="btnAddExercise">＋ 一键添加运动打卡</button>
       </div>
     </section>
 
@@ -547,20 +739,21 @@ canvas.chart{width:100%; height:auto; display:block;}
     </section>
 
     <!-- 错题本 -->
-    <section class="page" id="page-mistakes">
+    <section class="page" id="page-reviews">
       <div class="page-head">
-        <h1>错题本</h1>
-        <div class="sub">错题不是失败的证据，而是大脑升级的入口。</div>
+        <h1>复习中心</h1>
+        <div class="sub">对抗遗忘的唯一办法，就是在忘记之前再见一面。</div>
       </div>
-      <div class="edu-tip"><b>教育提示</b><span>按艾宾浩斯遗忘曲线，在 1、2、4、7、15、30 天后各复习一次，记忆留存率可从 20% 提升到 90% 以上。复习时先遮住答案，自己讲一遍思路。</span></div>
+      <div class="edu-tip"><b>教育提示</b><span>采用 SM-2 间隔重复算法：记得越牢，间隔越长；一旦忘记，立刻回到第 1 天。复习时先遮住解析，自己讲一遍，讲得出才是真掌握。</span></div>
       <div class="card" style="margin-bottom:16px;">
-        <h2>今日待复习 <span class="tag" id="dueCountTag" style="background:var(--primary-soft); color:var(--primary-deep);"></span></h2>
-        <div id="dueList" style="margin-top:8px;"></div>
+        <h2>今日复习 <span class="tag" id="dueCountTag" style="background:var(--primary-soft); color:var(--primary-deep);"></span></h2>
+        <div id="reviewQueue" style="margin-top:8px;"></div>
       </div>
-      <div class="filters" id="mistakeTabs" style="margin-bottom:14px;"></div>
-      <div class="mistake-list" id="mistakeList"></div>
+      <div class="filters" id="reviewKindTabs" style="margin-bottom:10px;"></div>
+      <div class="filters" id="reviewTabs" style="margin-bottom:14px;"></div>
+      <div class="mistake-list" id="reviewList"></div>
       <div style="margin-top:18px; text-align:center;">
-        <button class="btn btn-primary" id="btnAddMistake">＋ 记录错题</button>
+        <button class="btn btn-primary" id="btnAddReview">＋ 记录复习项</button>
       </div>
     </section>
 
@@ -580,7 +773,7 @@ canvas.chart{width:100%; height:auto; display:block;}
           <div style="flex:1; min-width:180px;">
             <div class="lbl" style="margin-bottom:6px;">积分规则</div>
             <ul class="rule-list">
-              <li>完成一项作业：按作业标注积分发放（默认 +5）</li>
+              <li>完成一项任务：按任务标注积分发放（默认 +5）</li>
               <li>完成一次专注打卡：按计划标注积分发放</li>
               <li>复习一道错题：+2 分</li>
               <li>积分只增不扣，兑换奖励时扣除相应分值</li>
@@ -605,6 +798,7 @@ canvas.chart{width:100%; height:auto; display:block;}
           <h1>成长报告</h1>
           <div class="sub">把一周的努力，翻译成孩子听得懂的鼓励。</div>
         </div>
+        <button class="btn btn-primary btn-sm" id="btnReportText">生成周报 / 月报</button>
       </div>
       <div class="edu-tip"><b>教育提示</b><span>和孩子复盘时，多用“你发现了吗”代替“你应该”：让他自己说出进步，比被表扬更能建立内在动力。</span></div>
       <div class="card" style="margin-bottom:16px;">
@@ -628,6 +822,20 @@ canvas.chart{width:100%; height:auto; display:block;}
           <h2>积分趋势（近 7 天）</h2>
           <div style="margin-top:12px;"><canvas class="chart" id="reportPointsChart" width="560" height="240"></canvas></div>
         </div>
+        <div class="card">
+          <h2>自测正确率趋势</h2>
+          <div style="margin-top:12px;"><canvas class="chart" id="reportQuizChart" width="560" height="240"></canvas></div>
+        </div>
+        <div class="card">
+          <h2>每日复习完成（近 7 天）</h2>
+          <div style="margin-top:12px;"><canvas class="chart" id="reportReviewChart" width="560" height="240"></canvas></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <h2>专注日历（近 12 周）</h2>
+        <div class="txt" style="margin:6px 0 12px;">颜色越深，代表那天的专注投入越多。连续的深色，就是习惯成型的样子。</div>
+        <div id="focusHeatmap" class="heatmap"></div>
+        <div class="heatmap-legend"><span>少</span><i class="hm-day lv0"></i><i class="hm-day lv1"></i><i class="hm-day lv2"></i><i class="hm-day lv3"></i><i class="hm-day lv4"></i><span>多</span></div>
       </div>
     </section>
 
@@ -642,17 +850,42 @@ canvas.chart{width:100%; height:auto; display:block;}
         <form id="studentForm" style="margin-top:16px;">
           <div class="form-grid">
             <div class="field"><label for="setName">学生姓名</label><input id="setName" type="text" maxlength="20" placeholder="如：小航"></div>
-            <div class="field"><label for="setGrade">年级</label>
-              <select id="setGrade">
-                <option>一年级</option><option>二年级</option><option>三年级</option><option>四年级</option>
-                <option selected>五年级</option><option>六年级</option>
-              </select>
+            <div class="field"><label for="setStage">学段</label>
+              <select id="setStage"></select>
+              <span class="hint">切换后学科筛选与表单自动适配该学段</span>
             </div>
+            <div class="field"><label for="setGrade">年级 / 阶段</label><input id="setGrade" type="text" maxlength="20" placeholder="如：五年级 / 高三 / 大二 / 备考"></div>
             <div class="field"><label for="setTerm">当前学期</label><input id="setTerm" type="text" maxlength="20" placeholder="如：五上 · 秋学期"></div>
-            <div class="field"><label for="setPomodoro">默认专注时长（分钟）</label><input id="setPomodoro" type="number" min="5" max="120" step="5"><span class="hint">新增作业时默认填入的计划用时</span></div>
+            <div class="field"><label for="setTermStart">学期开始日期</label><input id="setTermStart" type="date"><span class="hint">用于计算单双周与第几周（大学课程需要）</span></div>
+            <div class="field"><label for="setPomodoro">默认专注时长（分钟）</label><input id="setPomodoro" type="number" min="5" max="120" step="5"><span class="hint">新增任务时默认填入的计划用时</span></div>
           </div>
           <div style="margin-top:18px;"><button type="submit" class="btn btn-primary">保存设置</button></div>
         </form>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2>专注设置</h2>
+        <form id="focusForm" style="margin-top:16px;">
+          <div class="form-grid">
+            <div class="field"><label for="setRest">每段专注后休息（分钟）</label><input id="setRest" type="number" min="0" max="60" step="1"><span class="hint">完成一个专注时段后，自动提醒休息</span></div>
+            <div class="field"><label for="setRounds">每轮专注时段数</label><input id="setRounds" type="number" min="1" max="12" step="1"><span class="hint">凑满一轮会建议一次长休息（番茄工作法）</span></div>
+            <div class="field"><label for="setNoise">专注背景音</label><select id="setNoise"><option value="off">关</option><option value="white">白噪音</option><option value="pink">粉噪音</option><option value="brown">棕噪音</option></select><span class="hint">进入专注时自动播放，帮孩子屏蔽环境杂音</span></div>
+          </div>
+          <div style="margin-top:18px;"><button type="submit" class="btn btn-primary">保存专注设置</button></div>
+        </form>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2>外观</h2>
+        <div class="txt" style="margin:6px 0 12px;">浅色 / 深色 / 跟随系统，随心切换。</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-soft btn-sm" data-theme-pick="light">浅色</button>
+          <button class="btn btn-soft btn-sm" data-theme-pick="dark">深色</button>
+          <button class="btn btn-soft btn-sm" data-theme-pick="auto">跟随系统</button>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2>场景模板</h2>
+        <div class="txt" style="margin:6px 0 14px;">一键切换备考场景：自动配好考试倒计时、目标、打卡、课程与资料。已有数据不会被删除，可放心尝试。</div>
+        <div class="tpl-grid" id="templateGrid"></div>
       </div>
       <div class="card" style="margin-bottom:16px;">
         <h2>数据管理</h2>
@@ -667,7 +900,7 @@ canvas.chart{width:100%; height:auto; display:block;}
             <input type="file" id="importFile" accept="application/json,.json" hidden>
           </div>
           <div class="settings-row">
-            <div class="desc"><b>清空数据</b><span>删除全部作业、打卡、课程、错题与积分记录，恢复为初始演示数据。此操作不可恢复。</span></div>
+            <div class="desc"><b>清空数据</b><span>删除全部任务、打卡、课程、错题与积分记录，恢复为初始演示数据。此操作不可恢复。</span></div>
             <button class="btn btn-danger-soft" id="btnReset">清空并重置</button>
           </div>
         </div>
@@ -678,7 +911,7 @@ canvas.chart{width:100%; height:auto; display:block;}
           <li>数据保存在打开本页面的浏览器里；换设备使用时，请先在旧设备导出 JSON，再到新设备导入。</li>
           <li>专注计时中途刷新页面也没关系：计时会从断点自动恢复，悬浮条在所有页面都能看到。</li>
           <li>建议每周日晚打开「成长报告」，和孩子一起花 5 分钟复盘，再一起定下周的小目标。</li>
-          <li>作业的“计划用时”尽量让孩子自己估，估得准比做得快更值得表扬。</li>
+          <li>任务的“计划用时”尽量让孩子自己估，估得准比做得快更值得表扬。</li>
         </ul>
       </div>
     </section>
@@ -700,6 +933,12 @@ canvas.chart{width:100%; height:auto; display:block;}
 
 <div class="toast-wrap" id="toastWrap"></div>
 
+<script>
+if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+}
+</script>
+<script src="app2.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
